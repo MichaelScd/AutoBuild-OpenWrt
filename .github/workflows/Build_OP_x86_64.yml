@@ -94,11 +94,25 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Build firmware
+    - name : Build firmware
       working-directory: ./openwrt
       run: |
         echo -e "$(nproc) thread build."
         make -j$(nproc) V=s
+        
+    - name: Build firmware
+      working-directory: ./openwrt
+      run: |
+        OpenWrtSDK=./bin/targets/x86/64-glibc/
+        git clone https://github.com/numactl/numactl.git
+        cd numactl
+        git checkout v2.0.13 -b v2.0.13
+        ./autogen.sh
+        autoconf -i
+        export PATH=OpenWrtSDK/glibc/openwrt-sdk-x86-64_gcc-8.3.0_glibc.Linux-x86_64/staging_dir/toolchain-x86_64_gcc-8.3.0_glibc/bin/:$PATH
+        ./configure CC=x86_64-openwrt-linux-gnu-gcc --prefix=<OpenWrt SDK toolchain dir>
+        make install
+        
 
     - name : Upload artifact
       uses: actions/upload-artifact@master
